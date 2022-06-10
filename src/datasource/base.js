@@ -12,15 +12,15 @@ export class DataSource {
 
     }
 
-    async getDataSourceInfo(data) {
+    getDataSourceInfo() {
 
     }
 
-    async getTabs(data) {
+    async getCatagoryList(data) {
 
     }
 
-    async getTabInfo(data) {
+    async getCatagoryInfo(data) {
 
     }
 
@@ -31,6 +31,7 @@ export class DataSource {
     async getVideoInfo(data) {
 
     }
+
     async search(data) {
 
     }

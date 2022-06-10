@@ -11,17 +11,22 @@
     "build": "cd android && gradlew clean && gradlew assembleRelease"
   },
   "dependencies": {
+    "@jridgewell/resolve-uri": "^3.0.7",
     "@native-base/icons": "^0.0.11",
+    "@react-native-async-storage/async-storage": "^1.17.5",
     "@react-navigation/native": "^6.0.10",
+    "@react-navigation/native-stack": "^6.6.2",
     "axios": "^0.27.2",
     "cheerio": "^1.0.0-rc.11",
     "native-base": "^3.4.5",
     "react": "17.0.2",
     "react-native": "npm:react-native-tvos@0.68.1-1",
     "react-native-safe-area-context": "^4.2.5",
+    "react-native-screens": "^3.13.1",
     "react-native-svg": "^12.3.0",
     "react-native-text-ticker": "^1.14.0",
-    "react-native-video": "^5.2.0"
+    "react-native-video": "^5.2.0",
+    "react-native-webview": "^11.18.2"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",

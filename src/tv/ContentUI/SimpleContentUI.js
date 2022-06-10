@@ -14,9 +14,17 @@ export default function SimpleContentUI({ tabData, onRefresh }) {
         }
     });
 
+    let [currentIndex, setCurrentIndex] = useState(0);
+
+
+
+    return <View>
+
+    </View>
+
     return <ScrollView horizontal={true} style={styles.test} p={10}  >
         {tabData.data.map((d, i) => {
-            return <VideoCard key={d.title + i} imageUrl={d.imageUrl} data={d.data} title={d.title} />;
+            return <VideoCard key={d.title + "" + i} imageUrl={d.imageUrl} data={d.data} title={d.title} />;
         })}
     </ScrollView>;
 }

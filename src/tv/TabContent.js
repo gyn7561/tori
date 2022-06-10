@@ -10,6 +10,7 @@ export default function TabContent({ tabData, onRefresh }) {
         return <Text>loading</Text>;
     }
     if (tabData.type === "simple") {
+        // return <Text>{tabData.data.length}</Text>
         return <SimpleContentUI tabData={tabData} />;
     }
 

@@ -22,7 +22,7 @@ export default class YHDM {
         return {
             version: 0.1,
             author: "",
-            id: "YHDM-TORI",
+            id: "AGEM123-TORI",
         }
     }
 

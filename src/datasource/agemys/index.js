@@ -4,11 +4,14 @@ import * as cheerio from 'cheerio';
 import resolve from '@jridgewell/resolve-uri';
 
 
+//TODO该网站数据源感觉不是很稳
 export default class YHDM {
 
     //计划在这里注入webview 用于处理比较麻烦的数据
-    constructor({ }) {
-        this.baseUrl = "http://www.yinghuacd.com/";
+    constructor({ webView, setWebViewProps }) {
+        this.baseUrl = "https://www.agemys.com/";
+        this.webView = webView;
+        this.setWebViewProps = setWebViewProps;
     }
 
     async getConfig() {
@@ -22,35 +25,37 @@ export default class YHDM {
         return {
             version: 0.1,
             author: "",
-            id: "YHDM-TORI",
+            id: "AGEMYS-TORI",
         }
     }
 
     async getCatagoryList() {
-        let res = await axios.get(this.baseUrl);
-        let $ = cheerio.load(res.data);
-        let doms = $(".dmx li>a");
-        let result = doms.toArray().map(e => {
-            return {
-                text: $(e).text(),
+        return [
+            {
+                text: "每日推荐",
                 data: {
-                    url: resolve($(e).attr("href"), this.baseUrl)
+                    url: `${this.baseUrl}/recommend`
+                }
+            },
+            {
+                text: "最近更新",
+                data: {
+                    url: `${this.baseUrl}/update`
                 }
             }
-        })
-        return result;
+        ];
     }
 
     async getCatagoryInfo({ text, data }) {
         let res = await axios.get(data.url);
         let $ = cheerio.load(res.data);
-        let domWithImg = $("[href^='/show'] img");
+        let domWithImg = $(".anime_icon2");
         let result = domWithImg.toArray().map(d => {
             return {
-                title: $(d).attr("alt"),
-                imageUrl: $(d).attr("src"),
+                title: $(d).find(".anime_icon2_name").text().trim(),
+                imageUrl: resolve($(d).find(".anime_icon2_img").attr("src"), data.url),
                 data: {
-                    url: resolve($(d.parent).attr("href"), data.url)
+                    url: resolve($(d).find("a").attr("href"), data.url)
                 }
             }
         })
@@ -64,16 +69,19 @@ export default class YHDM {
         let url = data.url;
         let res = await axios.get(url);
         let $ = cheerio.load(res.data);
-        let videoList = $(".movurl a[href^='/v/']").toArray().map(dom => {
+
+        let videoList = $(".movurl a[href^='/play/']").toArray().map(dom => {
+            //react native 的 URL解析库有点bug啊...
+            // let queryString = new URL($(dom).attr("href"), url).search;
             return {
                 text: $(dom).text().trim(),
                 data: {
-                    url: resolve($(dom).attr("href"), url)
+                    url: this.baseUrl + $(dom).attr("href")
                 }
             }
         });
 
-        //针对 第 x 集 进行排序，因为网站顺序比较乱 
+        //针对 第 x 集 进行排序，因为网站顺序时正时逆
         videoList.forEach(item => {
             if (item.text.startsWith("第") && item.text.endsWith("集")) {
                 let num = item.text.substring(1, item.text.length - 1);
@@ -89,24 +97,45 @@ export default class YHDM {
         return {
             type: "simple",
             data: {
-                title: $("h1").text().trim(),
-                info: $(".info").text().trim(),
+                title: $(".detail_imform_name").text().trim(),
+                info: $(".detail_imform_desc_pre").text().trim(),
                 videoList: videoList,
-                imageUrl: $(".thumb img").attr("src")
+                imageUrl: $(".baseblock img").attr("src")
             }
         };
     }
 
     async getVideoInfo({ text, data }) {
         let { url } = data;
-        let res = await axios.get(url);
-        let $ = cheerio.load(res.data);
-        let vid = $("[data-vid]").attr("data-vid");
-        let m3u8Address = vid.replace("$mp4", "");
-        return {
-            address: m3u8Address,
-            type: "m3u8"
-        };
+
+        console.log(url);
+        let script = `let success = false;
+        setInterval(() => {
+            if (success) {
+                return;
+            }
+            try {
+                let src = $("#age_playfram").attr("src");
+                if (src) {
+                    window.ReactNativeWebView.postMessage(src);
+                    success = true;
+                }
+            } catch (e) {
+
+            }
+        }, 300);`;
+        this.setWebViewProps({
+            source: { uri: url },
+            onLoadEnd: (syntheticEvent) => {
+                // update component to be aware of loading status
+                this.webView.injectJavaScript(script);
+                console.log("syntheticEvent", syntheticEvent);
+            },
+            onMessage: (event) => {
+                console.log("onMessage", event);
+                this.setWebViewProps({ source: { uri: null } });//及时关闭webview 避免性能带宽浪费
+            }
+        })
     }
 
     async searchByPage({ keyword, page }) {
